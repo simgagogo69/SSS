@@ -110,6 +110,7 @@ canvas {
       <button onclick="upgrade('damage')">Damage (+1)</button>
       <button onclick="upgrade('maxHP')">Max HP (+10)</button>
       <button onclick="upgrade('reload')">Reload Speed (+2%)</button>
+        <button onclick="upgrade('luck')">Luck (+1%)</button>
     </div>
   </div>
 
@@ -137,7 +138,15 @@ canvas {
     let particles = [];
     let mouseDown = false;
     let fireRateMultiplier = 1.0;
-
+    let luck = 1.0
+        
+    const weaponDropChances = {
+      shotgun: 0.01,
+      burst: 0.008,      
+      auto: 0.01,        
+      laser: 0.0001,     
+      missile: 0.0005   
+    };
 
       function createParticle(x, y, color) {
   for (let i = 0; i < 15; i++) {
@@ -206,15 +215,22 @@ function loadGame() {
       drawInventory();
     }
       
-    function dropWeapon() {
-      const keys = Object.keys(weaponsData);
-      const filtered = keys.filter(k => !inventory.includes(k));
-      if (filtered.length === 0) return;
-      const drop = filtered[Math.floor(Math.random() * filtered.length)];
-      inventory.push(drop);
-      if (!currentWeapon) currentWeapon = drop;
+function dropWeapon() {
+  const keys = Object.keys(weaponDropChances);
+  const filtered = keys.filter(k => !inventory.includes(k));
+
+  for (let weapon of filtered) {
+    if (Math.random() < weaponDropChances[weapon] * luck) {
+      inventory.push(weapon);
+      if (!currentWeapon) currentWeapon = weapon;
       drawInventory();
+      console.log(`You got: ${weapon}`);
+      break;
     }
+  }
+}
+
+
 
 canvas.addEventListener('mousedown', e => {
   mouseDown = true;
@@ -231,14 +247,13 @@ canvas.addEventListener('mouseup', e => {
 });
 
 
-
 function shootAt(x, y) {
   if (!currentWeapon) return;
   const weapon = weaponsData[currentWeapon];
   let angle = Math.atan2(y - (player.y + player.h / 2), x - (player.x + player.w / 2));
 
   if (weapon.type === 'laser') {
-    createLaser(angle); // Laser doesn’t care about fire rate
+    createLaser(angle);
   } else {
     if (fireCooldown > 0) return;
     fireCooldown = Math.floor(weapon.fireRate * fireRateMultiplier);
@@ -268,7 +283,7 @@ function shootAt(x, y) {
       bullets.push({
         x: player.x + player.w / 2,
         y: player.y + player.h / 2,
-        w: 10000,
+        w: 1,
         h: 3,
         dx: Math.cos(angle) * 10,
         dy: Math.sin(angle) * 10,
@@ -341,6 +356,7 @@ function shootAt(x, y) {
   if (type === 'damage') player.damage++;
     if (type === 'maxHP') { maxHP += 10; hp += 10; }
        if (type === 'reload') fireRateMultiplier = Math.max(0.1, fireRateMultiplier - 0.02);
+        if (type === 'luck') luck = Math.max(1.0, luck + 0.01)
   upgradePoints--;
   updateHUD();
 }
@@ -449,7 +465,6 @@ function updateBullets() {
                 createParticle(e.x + e.w / 2, e.y + e.h / 2, e.boss ? 'purple' : 'red');
                 enemies.splice(ej, 1);
                 score += e.boss ? 100 : 10;
-                if (score % 100 === 0) upgradePoints++;
                 dropWeapon();
                 updateHUD();
               }
