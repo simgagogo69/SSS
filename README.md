@@ -1,4 +1,4 @@
-# School Shooting Simulator
+# School Shooting Simulator V0.1
 game for fun (And a joke)
 
 # CONTROLS 
