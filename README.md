@@ -7,6 +7,6 @@ U to open upgrade menu <br>
 F to open inventory <Br>
 
 # FEATURES
-7 weapons that drop by chance if not already picked up
-6 Enemy types
-4 Upgradeable stats
+7 weapons that drop by chance if not already picked up <br>
+6 Enemy types <br>
+4 Upgradeable stats 
